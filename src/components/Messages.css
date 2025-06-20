@@ -1,0 +1,241 @@
+.messages-container {
+  display: flex;
+  height: calc(100vh - var(--header-height));
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  margin: 20px auto;
+  max-width: 935px;
+}
+
+.conversations-list {
+  width: 350px;
+  border-right: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+}
+
+.conversations-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.conversations-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.conversation-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.conversation-item:hover,
+.conversation-item.active {
+  background-color: var(--bg-elevated);
+}
+
+.conversation-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  margin-right: 12px;
+  background-color: var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.conversation-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.conversation-avatar i {
+  font-size: 24px;
+  color: var(--text-secondary);
+}
+
+.conversation-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.conversation-name {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.last-message {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.messages-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+}
+
+.messages-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.messages-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.messages-list {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.message {
+  max-width: 60%;
+  display: flex;
+  flex-direction: column;
+}
+
+.message.sent {
+  align-self: flex-end;
+}
+
+.message.received {
+  align-self: flex-start;
+}
+
+.message-content {
+  padding: 12px 16px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.message.sent .message-content {
+  background-color: var(--accent-blue);
+  color: white;
+}
+
+.message.received .message-content {
+  background-color: var(--bg-elevated);
+}
+
+.message-time {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  padding: 0 8px;
+}
+
+.message-input {
+  padding: 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 12px;
+}
+
+.message-input input {
+  flex: 1;
+  padding: 12px;
+  border-radius: 22px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.message-input input:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+
+.message-input button {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background-color: var(--accent-blue);
+  color: white;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.message-input button:hover {
+  opacity: 0.9;
+}
+
+.no-conversation {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  padding: 40px;
+  text-align: center;
+}
+
+.no-conversation i {
+  font-size: 96px;
+  margin-bottom: 24px;
+}
+
+.no-conversation h3 {
+  font-size: 22px;
+  font-weight: 300;
+  margin-bottom: 8px;
+}
+
+.no-conversation p {
+  font-size: 14px;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 935px) {
+  .messages-container {
+    margin: 0;
+    height: calc(100vh - 60px);
+    border: none;
+    border-radius: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .conversations-list {
+    width: 100%;
+    display: none;
+  }
+
+  .conversations-list.active {
+    display: block;
+  }
+
+  .messages-content {
+    width: 100%;
+  }
+
+  .messages-content:not(.active) {
+    display: none;
+  }
+} 

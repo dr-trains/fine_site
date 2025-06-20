@@ -1,0 +1,162 @@
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #000;
+  color: #fff;
+}
+
+.sidebar {
+  width: 240px;
+  background-color: #111;
+  padding: 20px;
+  position: fixed;
+  height: 100vh;
+  border-right: 1px solid #222;
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+}
+
+.logo {
+  text-decoration: none;
+  color: #fff;
+  margin-bottom: 30px;
+}
+
+.logo h1 {
+  font-size: 24px;
+  background: linear-gradient(45deg, #ff6b6b, #ff59b4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 15px;
+  text-decoration: none;
+  color: #fff;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+  font-size: 16px;
+}
+
+.nav-item:hover {
+  background-color: #222;
+}
+
+.nav-item.active {
+  background-color: #333;
+  font-weight: 500;
+}
+
+.nav-item i {
+  font-size: 20px;
+  width: 24px;
+  text-align: center;
+}
+
+.logout-btn {
+  margin-top: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #ff4757;
+  text-align: left;
+  font-size: 16px;
+}
+
+.logout-btn:hover {
+  background-color: rgba(255, 71, 87, 0.1);
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 240px;
+  min-height: 100vh;
+  background-color: #000;
+  width: calc(100vw - 240px);
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 1024px) {
+  .main-content {
+    padding: 20px 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 60px;
+    padding: 20px 0;
+  }
+
+  .nav-item span,
+  .logo h1 {
+    display: none;
+  }
+
+  .nav-item {
+    padding: 12px 0;
+    justify-content: center;
+  }
+
+  .nav-item i {
+    margin: 0;
+  }
+
+  .main-content {
+    margin-left: 60px;
+    width: calc(100vw - 60px);
+  }
+
+  .posts-feed {
+    margin-left: calc(50% - 300px + 30px) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    bottom: 0;
+    width: 100%;
+    height: 60px;
+    padding: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    border-right: none;
+    border-top: 1px solid #222;
+  }
+
+  .nav-links {
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .logo, .logout-btn {
+    display: none;
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100vw;
+    margin-bottom: 60px;
+  }
+
+  .posts-feed {
+    margin: 0 auto !important;
+    padding: 10px !important;
+  }
+} 

@@ -1,0 +1,15 @@
+runtime: nodejs20
+env: standard
+instance_class: F1
+automatic_scaling:
+  target_cpu_utilization: 0.65
+  min_instances: 1
+  max_instances: 2
+
+env_variables:
+  MONGODB_URI: "mongodb+srv://sevendysix:Ye%23n8Yb7.MuEFgx@cluster0.kwecegc.mongodb.net/fineshytig?retryWrites=true&w=majority&appName=Cluster0"
+  JWT_SECRET: "Fs89v238v9824nv982vn98sn98vn280v3298n98"
+
+handlers:
+  - url: /.*
+    script: auto
