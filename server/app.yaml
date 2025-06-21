@@ -7,6 +7,7 @@ automatic_scaling:
   max_instances: 2
 
 env_variables:
+  GCLOUD_STORAGE_BUCKET: "fine-shyt-ig.appspot.com"
   MONGODB_URI: "mongodb+srv://sevendysix:Ye%23n8Yb7.MuEFgx@cluster0.kwecegc.mongodb.net/fineshytig?retryWrites=true&w=majority&appName=Cluster0"
   JWT_SECRET: "Fs89v238v9824nv982vn98sn98vn280v3298n98"
 

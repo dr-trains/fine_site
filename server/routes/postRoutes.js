@@ -1,22 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
 const auth = require('../middleware/auth.js');
 const Post = require('../models/Post');
 const User = require('../models/User');
-const upload = require('../middleware/upload');
+const { multer, gcsUpload } = require('../middleware/gcsUpload');
 const extractHashtags = require('../utils/hashtagExtractor');
 const Notification = require('../models/Notification');
 
 // Create a new post with media upload
-router.post('/', auth, upload.single('media'), async (req, res) => {
+router.post('/', auth, multer.single('media'), gcsUpload, async (req, res) => {
   try {
-    console.log('Creating new post');
-    console.log('Request file:', req.file);
-    console.log('Request body:', req.body);
-
     if (!req.file) {
       return res.status(400).json({ message: 'Please upload a file' });
+    }
+    if (req.file.gcsError) {
+      return res.status(500).json({ message: 'Error uploading file to cloud storage.' });
     }
 
     const { caption, location } = req.body;
@@ -30,15 +28,13 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     const post = new Post({
       user: req.user._id,
       caption,
-      media: `/uploads/${req.file.filename}`,
+      media: req.file.gcsUrl,
       mediaType,
       location,
       tags: extractedTags
     });
 
-    console.log('Saving post:', post);
     await post.save();
-    console.log('Post saved successfully');
 
     // Add post to user's posts array
     await User.findByIdAndUpdate(
@@ -50,23 +46,11 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     const populatedPost = await Post.findById(post._id)
       .populate('user', 'username profilePicture');
 
-    console.log('Sending populated post:', populatedPost);
     res.status(201).json(populatedPost);
   } catch (error) {
     console.error('Error creating post:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
-});
-
-// Add error handling for file upload
-router.use((error, req, res, next) => {
-  if (error instanceof multer.MulterError) {
-    if (error.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ message: 'File is too large. Maximum size is 10MB' });
-    }
-    return res.status(400).json({ message: error.message });
-  }
-  next(error);
 });
 
 // Get feed posts (from followed users and self)
@@ -335,19 +319,30 @@ router.get('/trending/hashtags', auth, async (req, res) => {
 // Get explore posts (popular posts not from following)
 router.get('/explore', auth, async (req, res) => {
   try {
-    const currentUser = await User.findById(req.user._id);
-    
-    const posts = await Post.find({
-      user: { 
-        $nin: [...currentUser.following, req.user._id] 
-      }
-    })
-    .sort('-likes.length -comments.length -createdAt')
-    .populate('user', 'username profilePicture')
-    .limit(20);
+    const posts = await Post.aggregate([
+      // Match only video posts
+      { $match: { mediaType: 'video' } },
+      // Add a field for likes count
+      {
+        $addFields: {
+          likesCount: { $size: '$likes' },
+        },
+      },
+      // Sort by likes and recency
+      { $sort: { likesCount: -1, createdAt: -1 } },
+      // Limit the results
+      { $limit: 50 },
+    ]);
+
+    // Populate user information
+    await Post.populate(posts, {
+      path: 'user',
+      select: 'username profilePicture',
+    });
 
     res.json(posts);
   } catch (error) {
+    console.error('Error fetching explore feed:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
