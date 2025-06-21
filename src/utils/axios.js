@@ -1,7 +1,11 @@
 import axios from 'axios';
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const api = axios.create({
-  baseURL: 'http://localhost:5000'
+  baseURL: isProduction
+    ? 'https://fine-shyt-ig.uc.r.appspot.com'
+    : 'http://localhost:5000',
 });
 
 // Add a request interceptor
