@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../utils/axios';
 import './Messages.css';
 
 const Messages = () => {
@@ -10,30 +11,25 @@ const Messages = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchConversations = async () => {
+      try {
+        const response = await api.get('/api/conversations');
+        setConversations(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching conversations:', error);
+        setLoading(false);
+      }
+    };
+
     fetchConversations();
   }, []);
 
-  const fetchConversations = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/conversations', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setConversations(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching conversations:', error);
-      setLoading(false);
-    }
-  };
-
   const fetchMessages = async (conversationId) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/messages/${conversationId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(`/api/messages/${conversationId}`);
       setMessages(response.data);
+      setSelectedConversation(conversationId);
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
@@ -44,23 +40,20 @@ const Messages = () => {
     if (!newMessage.trim() || !selectedConversation) return;
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/messages', {
-        conversationId: selectedConversation._id,
+      await api.post('/api/messages', {
+        recipient: selectedConversation,
         content: newMessage
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
 
       setNewMessage('');
-      fetchMessages(selectedConversation._id);
+      fetchMessages(selectedConversation);
     } catch (error) {
       console.error('Error sending message:', error);
     }
   };
 
   const selectConversation = (conversation) => {
-    setSelectedConversation(conversation);
+    setSelectedConversation(conversation._id);
     fetchMessages(conversation._id);
   };
 

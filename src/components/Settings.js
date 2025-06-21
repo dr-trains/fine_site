@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axios';
 import './Settings.css';
 
 const Settings = () => {
@@ -18,31 +18,31 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchUserData();
-  }, []);
-
-  const fetchUserData = async () => {
+  const fetchUser = useCallback(async () => {
+    setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const userId = JSON.parse(localStorage.getItem('user'))._id;
-      const response = await axios.get(`http://localhost:5000/api/users/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      setFormData(prevState => ({
-        ...prevState,
-        name: response.data.name || '',
-        username: response.data.username || '',
-        email: response.data.email || '',
-        bio: response.data.bio || ''
-      }));
-      setLoading(false);
+      const currentUser = JSON.parse(localStorage.getItem('user'));
+      const userId = currentUser?._id;
+      if (userId) {
+        const response = await api.get(`/api/users/${userId}`);
+        setFormData(prevState => ({
+          ...prevState,
+          name: response.data.name || '',
+          username: response.data.username || '',
+          email: response.data.email || '',
+          bio: response.data.bio || ''
+        }));
+        setLoading(false);
+      }
     } catch (err) {
       setError('Failed to load user data');
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
 
   const handleChange = (e) => {
     setFormData({
@@ -55,12 +55,18 @@ const Settings = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      const userId = JSON.parse(localStorage.getItem('user'))._id;
+      const currentUser = JSON.parse(localStorage.getItem('user'));
+      const userId = currentUser?._id;
+      const updateData = {
+        name: formData.name,
+        username: formData.username,
+        email: formData.email,
+        bio: formData.bio
+      };
 
-      // If changing password, verify passwords match
       if (formData.newPassword) {
         if (formData.newPassword !== formData.confirmNewPassword) {
           setError('New passwords do not match');
@@ -70,28 +76,14 @@ const Settings = () => {
           setError('Current password is required to change password');
           return;
         }
-      }
-
-      const updateData = {
-        name: formData.name,
-        username: formData.username,
-        email: formData.email,
-        bio: formData.bio
-      };
-
-      if (formData.newPassword) {
         updateData.currentPassword = formData.currentPassword;
         updateData.newPassword = formData.newPassword;
       }
 
-      await axios.put(`http://localhost:5000/api/users/${userId}`, updateData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.put(`/api/users/${userId}`, updateData);
 
-      // Update local storage with new user data
-      const userResponse = await axios.get(`http://localhost:5000/api/users/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // Fetch updated user data and update localStorage
+      const userResponse = await api.get(`/api/users/${userId}`);
       localStorage.setItem('user', JSON.stringify(userResponse.data));
 
       setSuccess('Profile updated successfully');
@@ -103,8 +95,12 @@ const Settings = () => {
         newPassword: '',
         confirmNewPassword: ''
       }));
+
+      navigate('/profile');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update profile');
+    } finally {
+      setLoading(false);
     }
   };
 

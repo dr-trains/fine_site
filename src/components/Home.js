@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axios';
 import './Home.css';
 
 const Home = () => {
@@ -14,17 +14,19 @@ const Home = () => {
       navigate('/login');
       return;
     }
-    setUser(JSON.parse(storedUser));
-    fetchPosts();
+    const parsedUser = JSON.parse(storedUser);
+    setUser(parsedUser);
+    fetchPosts(parsedUser._id);
   }, [navigate]);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (currentUserId) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/posts/feed', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setPosts(response.data);
+      const response = await api.get('/api/posts/feed');
+      const postsWithLikeStatus = response.data.map(post => ({
+        ...post,
+        isLiked: post.likes.includes(currentUserId)
+      }));
+      setPosts(postsWithLikeStatus);
     } catch (error) {
       console.error('Error fetching posts:', error.response?.data || error.message);
     }
@@ -32,13 +34,16 @@ const Home = () => {
 
   const handleLike = async (postId) => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/posts/${postId}/like`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      fetchPosts();
+      await api.put(`/api/posts/${postId}/like`);
+      setPosts(posts.map(p => {
+        if (p._id === postId) {
+          return { ...p, isLiked: !p.isLiked };
+        }
+        return p;
+      }));
     } catch (error) {
       console.error('Error liking post:', error);
+      fetchPosts(user._id);
     }
   };
 
@@ -52,7 +57,7 @@ const Home = () => {
             <div className="user-info" onClick={() => navigate(`/profile/${post.user?._id}`)}>
               <div className="avatar">
                 {post.user?.profilePicture ? (
-                  <img src={`http://localhost:5000${post.user.profilePicture}`} alt="" />
+                  <img src={`${api.defaults.baseURL}${post.user.profilePicture}`} alt="" />
                 ) : (
                   <i className="fas fa-user"></i>
                 )}
@@ -76,12 +81,12 @@ const Home = () => {
                   poster={post.thumbnail || ''}
                   className="video-player"
                 >
-                  <source src={`http://localhost:5000${post.media}`} type="video/mp4" />
+                  <source src={`${api.defaults.baseURL}${post.media}`} type={post.media.endsWith('.mp4') ? 'video/mp4' : 'video/webm'} />
                   Your browser does not support video playback.
                 </video>
               ) : (
                 <img 
-                  src={`http://localhost:5000${post.media}`} 
+                  src={`${api.defaults.baseURL}${post.media}`} 
                   alt={post.caption || ''} 
                   loading="lazy" 
                 />
@@ -91,7 +96,7 @@ const Home = () => {
 
           <div className="post-actions">
             <button 
-              className={`action-btn ${post.likes?.includes(user._id) ? 'liked' : ''}`}
+              className={`action-btn ${post.isLiked ? 'liked' : ''}`}
               onClick={() => handleLike(post._id)}
             >
               <i className="fas fa-heart"></i>

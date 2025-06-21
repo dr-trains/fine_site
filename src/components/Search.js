@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axios';
 import './Search.css';
 
 const Search = () => {
@@ -18,10 +18,7 @@ const Search = () => {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/users/search?q=${query}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(`/api/users/search?q=${query}`);
       setSearchResults(response.data);
     } catch (error) {
       console.error('Search error:', error);

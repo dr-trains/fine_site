@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axios';
 import './Explore.css';
 
 const Explore = () => {
@@ -14,10 +14,7 @@ const Explore = () => {
 
   const fetchExplorePosts = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/posts/explore', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/api/posts/explore');
       setPosts(response.data);
     } catch (error) {
       console.error('Error fetching explore posts:', error);
@@ -47,21 +44,20 @@ const Explore = () => {
             className="explore-item"
             onClick={() => handlePostClick(post._id)}
           >
-            {post.mediaType === 'video' ? (
-              <div className="media-container video">
-                <video>
-                  <source src={`http://localhost:5000${post.media}`} type="video/mp4" />
-                </video>
-                <i className="fas fa-play"></i>
-              </div>
-            ) : (
-              <div className="media-container">
-                <img 
-                  src={`http://localhost:5000${post.media}`}
-                  alt={post.caption}
-                />
-              </div>
-            )}
+            <div className="grid-item-content">
+              {post.mediaType === 'video' ? (
+                <>
+                  <video>
+                    <source src={`${api.defaults.baseURL}${post.media}`} type="video/mp4" />
+                  </video>
+                  <div className="video-icon">
+                    <i className="fas fa-play"></i>
+                  </div>
+                </>
+              ) : (
+                <img src={`${api.defaults.baseURL}${post.media}`} alt={post.caption} />
+              )}
+            </div>
             <div className="post-overlay">
               <div className="post-stats">
                 <span><i className="fas fa-heart"></i> {post.likes?.length || 0}</span>

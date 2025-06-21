@@ -237,14 +237,14 @@ const Profile = () => {
                 {post.mediaType === 'video' ? (
                   <div className="media-container video">
                     <video>
-                      <source src={`http://localhost:5000${post.media}`} type="video/mp4" />
+                      <source src={`${api.defaults.baseURL}${post.media}`} type="video/mp4" />
                     </video>
                     <i className="fas fa-play"></i>
                   </div>
                 ) : (
                   <div className="media-container">
                     <img 
-                      src={`http://localhost:5000${post.media}`}
+                      src={`${api.defaults.baseURL}${post.media}`}
                       alt={post.caption}
                     />
                   </div>

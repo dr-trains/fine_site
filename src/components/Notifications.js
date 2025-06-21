@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axios';
 import './Notifications.css';
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,22 +14,31 @@ const Notifications = () => {
   }, []);
 
   const fetchNotifications = async () => {
+    setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/notifications', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/api/notifications');
       setNotifications(response.data);
-      setLoading(false);
     } catch (error) {
+      setError('Failed to load notifications');
       console.error('Error fetching notifications:', error);
+    } finally {
       setLoading(false);
     }
   };
 
-  const handleNotificationClick = (notification) => {
-    // Mark notification as read
-    markAsRead(notification._id);
+  const handleNotificationClick = async (notification) => {
+    if (!notification.read) {
+      try {
+        await api.put(`/api/notifications/${notification._id}/read`);
+        setNotifications(
+          notifications.map((n) =>
+            n._id === notification._id ? { ...n, read: true } : n
+          )
+        );
+      } catch (error) {
+        console.error('Error marking notification as read:', error);
+      }
+    }
 
     // Navigate based on notification type
     switch (notification.type) {
@@ -41,18 +51,6 @@ const Notifications = () => {
         break;
       default:
         break;
-    }
-  };
-
-  const markAsRead = async (notificationId) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/notifications/${notificationId}/read`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      fetchNotifications();
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
     }
   };
 
