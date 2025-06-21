@@ -320,20 +320,28 @@ router.get('/trending/hashtags', auth, async (req, res) => {
 router.get('/explore', auth, async (req, res) => {
   try {
     const posts = await Post.aggregate([
+      // Add a field for the number of likes
       {
         $addFields: {
           likesCount: { $size: '$likes' },
         },
       },
+      // Sort by likes and then by creation date
       { $sort: { likesCount: -1, createdAt: -1 } },
+      // Limit the results
       { $limit: 100 },
+      // Join with the users collection to get author details
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      // Deconstruct the user array to a single object
+      { $unwind: '$user' },
     ]);
-
-    // Populate user and comments information
-    await Post.populate(posts, {
-      path: 'user comments.user',
-      select: 'username profilePicture',
-    });
 
     res.json(posts);
   } catch (error) {
