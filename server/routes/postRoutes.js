@@ -316,27 +316,22 @@ router.get('/trending/hashtags', auth, async (req, res) => {
   }
 });
 
-// Get explore posts (popular posts not from following)
+// Get explore posts
 router.get('/explore', auth, async (req, res) => {
   try {
     const posts = await Post.aggregate([
-      // Match only video posts
-      { $match: { mediaType: 'video' } },
-      // Add a field for likes count
       {
         $addFields: {
           likesCount: { $size: '$likes' },
         },
       },
-      // Sort by likes and recency
       { $sort: { likesCount: -1, createdAt: -1 } },
-      // Limit the results
-      { $limit: 50 },
+      { $limit: 100 },
     ]);
 
-    // Populate user information
+    // Populate user and comments information
     await Post.populate(posts, {
-      path: 'user',
+      path: 'user comments.user',
       select: 'username profilePicture',
     });
 
