@@ -11,7 +11,7 @@ const Notification = require('../models/Notification');
 // Register new user
 router.post('/register', async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, name } = req.body;
 
     // Check if user already exists
     let user = await User.findOne({ $or: [{ email }, { username }] });
@@ -23,7 +23,8 @@ router.post('/register', async (req, res) => {
     user = new User({
       username,
       email,
-      password
+      password,
+      name
     });
 
     await user.save();
@@ -40,7 +41,8 @@ router.post('/register', async (req, res) => {
       user: {
         _id: user._id,
         username: user.username,
-        email: user.email
+        email: user.email,
+        name: user.name
       }
     });
   } catch (error) {
@@ -77,7 +79,8 @@ router.post('/login', async (req, res) => {
       user: {
         _id: user._id,
         username: user.username,
-        email: user.email
+        email: user.email,
+        name: user.name
       }
     });
   } catch (error) {
