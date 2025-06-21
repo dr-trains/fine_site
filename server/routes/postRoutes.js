@@ -319,17 +319,26 @@ router.get('/trending/hashtags', auth, async (req, res) => {
 // Get explore posts
 router.get('/explore', auth, async (req, res) => {
   try {
-    // Using a more stable `find` query for now to ensure the page loads.
-    // We can re-implement sorting by likes once this is confirmed to be working.
-    const posts = await Post.find({})
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .populate('user', 'username profilePicture')
-      .lean();
+    console.log('--- EXPLORE: Attempting to fetch posts ---');
+    const posts = await Post.find({}).sort({ createdAt: -1 }).limit(50).lean();
+    console.log(`--- EXPLORE: Found ${posts.length} posts ---`);
+    
+    // Manually populate user data for stability
+    const userIds = [...new Set(posts.map(p => p.user.toString()))];
+    const users = await User.find({ _id: { $in: userIds } }).select('username profilePicture').lean();
+    const userMap = users.reduce((acc, user) => {
+      acc[user._id.toString()] = user;
+      return acc;
+    }, {});
 
-    res.json(posts);
+    const populatedPosts = posts.map(post => ({
+      ...post,
+      user: userMap[post.user.toString()],
+    }));
+
+    res.json(populatedPosts);
   } catch (error) {
-    console.error('Error fetching explore feed:', error);
+    console.error('--- EXPLORE: Critical error caught ---', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
