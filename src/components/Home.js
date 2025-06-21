@@ -57,7 +57,7 @@ const Home = () => {
             <div className="user-info" onClick={() => navigate(`/profile/${post.user?._id}`)}>
               <div className="avatar">
                 {post.user?.profilePicture ? (
-                  <img src={`${api.defaults.baseURL}${post.user.profilePicture}`} alt="" />
+                  <img src={post.user.profilePicture} alt="" />
                 ) : (
                   <i className="fas fa-user"></i>
                 )}
@@ -81,12 +81,12 @@ const Home = () => {
                   poster={post.thumbnail || ''}
                   className="video-player"
                 >
-                  <source src={`${api.defaults.baseURL}${post.media}`} type={post.media.endsWith('.mp4') ? 'video/mp4' : 'video/webm'} />
+                  <source src={post.media} type={post.media.endsWith('.mp4') ? 'video/mp4' : 'video/webm'} />
                   Your browser does not support video playback.
                 </video>
               ) : (
                 <img 
-                  src={`${api.defaults.baseURL}${post.media}`} 
+                  src={post.media} 
                   alt={post.caption || ''} 
                   loading="lazy" 
                 />

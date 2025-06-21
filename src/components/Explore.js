@@ -48,14 +48,14 @@ const Explore = () => {
               {post.mediaType === 'video' ? (
                 <>
                   <video>
-                    <source src={`${api.defaults.baseURL}${post.media}`} type="video/mp4" />
+                    <source src={post.media} type="video/mp4" />
                   </video>
                   <div className="video-icon">
                     <i className="fas fa-play"></i>
                   </div>
                 </>
               ) : (
-                <img src={`${api.defaults.baseURL}${post.media}`} alt={post.caption} />
+                <img src={post.media} alt={post.caption} />
               )}
             </div>
             <div className="post-overlay">

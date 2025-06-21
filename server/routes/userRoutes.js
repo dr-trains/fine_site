@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth.js');
 const User = require('../models/User');
 const Post = require('../models/Post');
-const upload = require('../middleware/upload');
+const { multer, gcsUpload } = require('../middleware/gcsUpload');
 const Notification = require('../models/Notification');
 
 // Register new user
@@ -121,14 +121,17 @@ router.put('/profile', auth, async (req, res) => {
 });
 
 // Update profile picture
-router.put('/profile-picture', auth, upload.single('profilePicture'), async (req, res) => {
+router.put('/profile-picture', auth, multer.single('profilePicture'), gcsUpload, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'Please upload an image' });
     }
+    if (req.file.gcsError) {
+      return res.status(500).json({ message: 'Error uploading file to cloud storage.' });
+    }
 
     const user = await User.findById(req.user._id);
-    user.profilePicture = `/uploads/${req.file.filename}`;
+    user.profilePicture = req.file.gcsUrl;
     await user.save();
 
     res.json(user);
