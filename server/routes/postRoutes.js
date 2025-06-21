@@ -319,26 +319,10 @@ router.get('/trending/hashtags', auth, async (req, res) => {
 // Get explore posts
 router.get('/explore', auth, async (req, res) => {
   try {
-    console.log('--- EXPLORE: Attempting to fetch posts ---');
-    const posts = await Post.find({}).sort({ createdAt: -1 }).limit(50).lean();
-    console.log(`--- EXPLORE: Found ${posts.length} posts ---`);
-    
-    // Manually populate user data for stability
-    const userIds = [...new Set(posts.map(p => p.user.toString()))];
-    const users = await User.find({ _id: { $in: userIds } }).select('username profilePicture').lean();
-    const userMap = users.reduce((acc, user) => {
-      acc[user._id.toString()] = user;
-      return acc;
-    }, {});
-
-    const populatedPosts = posts.map(post => ({
-      ...post,
-      user: userMap[post.user.toString()],
-    }));
-
-    res.json(populatedPosts);
+    console.log('--- EXPLORE: ROUTE HANDLER ENTERED ---');
+    res.json({ message: 'Explore page is alive' });
   } catch (error) {
-    console.error('--- EXPLORE: Critical error caught ---', error);
+    console.error('--- EXPLORE: THIS SHOULD NOT BE REACHED ---', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
