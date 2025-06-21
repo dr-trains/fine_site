@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axios';
 import './Create.css';
 
 const Create = () => {
@@ -32,16 +32,14 @@ const Create = () => {
     setError('');
 
     try {
-      const token = localStorage.getItem('token');
       const formData = new FormData();
       formData.append('caption', post.caption);
       formData.append('media', post.media);
 
-      await axios.post('http://localhost:5000/api/posts', formData, {
+      await api.post('/api/posts', formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
       navigate('/');
