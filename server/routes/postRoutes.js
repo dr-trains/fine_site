@@ -319,29 +319,13 @@ router.get('/trending/hashtags', auth, async (req, res) => {
 // Get explore posts
 router.get('/explore', auth, async (req, res) => {
   try {
-    const posts = await Post.aggregate([
-      // Add a field for the number of likes
-      {
-        $addFields: {
-          likesCount: { $size: '$likes' },
-        },
-      },
-      // Sort by likes and then by creation date
-      { $sort: { likesCount: -1, createdAt: -1 } },
-      // Limit the results
-      { $limit: 100 },
-      // Join with the users collection to get author details
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'user',
-          foreignField: '_id',
-          as: 'user',
-        },
-      },
-      // Deconstruct the user array to a single object
-      { $unwind: '$user' },
-    ]);
+    // Using a more stable `find` query for now to ensure the page loads.
+    // We can re-implement sorting by likes once this is confirmed to be working.
+    const posts = await Post.find({})
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .populate('user', 'username profilePicture')
+      .lean();
 
     res.json(posts);
   } catch (error) {
