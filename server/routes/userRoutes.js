@@ -46,7 +46,8 @@ router.post('/register', async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
@@ -84,7 +85,8 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
@@ -96,6 +98,7 @@ router.get('/profile', auth, async (req, res) => {
       .populate('posts', 'media caption createdAt');
     res.json(user);
   } catch (error) {
+    console.error('Get profile error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -112,6 +115,7 @@ router.put('/profile', auth, async (req, res) => {
     await user.save();
     res.json(user);
   } catch (error) {
+    console.error('Update profile error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -129,6 +133,7 @@ router.put('/profile-picture', auth, upload.single('profilePicture'), async (req
 
     res.json(user);
   } catch (error) {
+    console.error('Update profile picture error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -169,6 +174,7 @@ router.post('/follow/:id', auth, async (req, res) => {
 
     res.json({ message: 'Successfully followed user' });
   } catch (error) {
+    console.error('Follow user error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -205,6 +211,7 @@ router.post('/unfollow/:id', auth, async (req, res) => {
 
     res.json({ message: 'Successfully unfollowed user' });
   } catch (error) {
+    console.error('Unfollow user error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -221,6 +228,7 @@ router.get('/:id/followers', auth, async (req, res) => {
 
     res.json(user.followers);
   } catch (error) {
+    console.error('Get followers error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -237,6 +245,7 @@ router.get('/:id/following', auth, async (req, res) => {
 
     res.json(user.following);
   } catch (error) {
+    console.error('Get following error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -257,6 +266,7 @@ router.get('/suggested', auth, async (req, res) => {
 
     res.json(suggestedUsers);
   } catch (error) {
+    console.error('Get suggested users error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -344,7 +354,7 @@ router.get('/search', auth, async (req, res) => {
     res.json(results);
   } catch (error) {
     console.error('Search error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
@@ -362,7 +372,7 @@ router.get('/:id', auth, async (req, res) => {
     res.json(user);
   } catch (error) {
     console.error('Error fetching user:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
@@ -383,7 +393,7 @@ router.get('/:id/posts', auth, async (req, res) => {
     res.json(user.posts || []);
   } catch (error) {
     console.error('Error fetching user posts:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
