@@ -398,31 +398,3 @@ router.get('/:id/shares', auth, async (req, res) => {
   }
 });
 
-// Get feed posts (from followed users and self)
-router.get('/videos', auth, async (req, res) => {
-  try {
-    console.log('Fetching feed for user:', req.user._id);
-    const currentUser = await User.findById(req.user._id);
-    console.log('Current user following:', currentUser.following);
-    
-  
-
-    // Populate user information
-    await Post.populate(posts, {
-      path: 'user',
-      select: 'username profilePicture'
-    });
-
-    // Populate comments user information
-    await Post.populate(posts, {
-      path: 'comments.user',
-      select: 'username profilePicture'
-    });
-    
-    console.log('Found unique posts:', posts.length);
-    res.json(posts);
-  } catch (error) {
-    console.error('Error in feed:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
