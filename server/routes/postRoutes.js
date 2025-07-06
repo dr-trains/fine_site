@@ -397,3 +397,18 @@ router.get('/:id/shares', auth, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+// Get all videos (global video feed)
+router.get('/videos', async (req, res) => {
+  try {
+    const videos = await Post.find({ mediaType: 'video' })
+      .populate('user', 'username profilePicture')
+      .sort('-createdAt')
+      .limit(100); // Adjust limit as needed
+    res.json(videos);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+module.exports = router;
