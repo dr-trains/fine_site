@@ -112,6 +112,17 @@ const Login = () => {
             style={{ marginTop: '16px', width: '100%' }}
             onClick={() => {
               localStorage.setItem('guest', 'true');
+              localStorage.setItem('user', JSON.stringify({
+                _id: 'guest',
+                username: 'Guest',
+                name: 'Guest User',
+                email: '',
+                profilePicture: '',
+                bio: 'Browsing as guest',
+                followers: [],
+                following: [],
+                posts: []
+              }));
               navigate('/');
             }}
           >

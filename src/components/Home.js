@@ -18,7 +18,7 @@ const Home = () => {
     const parsedUser = JSON.parse(storedUser);
     setUser(parsedUser);
     if (showVideoFeed) {
-      fetchGlobalVideos();
+      fetchGlobalVideos(parsedUser);
     } else {
       fetchPosts(parsedUser._id);
     }
@@ -37,12 +37,12 @@ const Home = () => {
     }
   };
 
-  const fetchGlobalVideos = async () => {
+  const fetchGlobalVideos = async (currentUser) => {
     try {
       const response = await api.get('/api/posts/videos');
       const postsWithLikeStatus = response.data.map(post => ({
         ...post,
-        isLiked: post.likes.includes(user?._id)
+        isLiked: currentUser && post.likes.includes(currentUser._id)
       }));
       setPosts(postsWithLikeStatus);
     } catch (error) {
@@ -66,8 +66,6 @@ const Home = () => {
   };
 
   const isGuest = localStorage.getItem('guest') === 'true';
-
-  if (!user) return null;
 
   return (
     <div className="posts-feed">
