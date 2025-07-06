@@ -1,73 +1,113 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/axios';
-import './Explore.css';
+import './Home.css';
 
 const Explore = () => {
+  const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchExplorePosts();
-  }, []);
+    const storedUser = localStorage.getItem('user');
+    if (!storedUser) {
+      navigate('/login');
+      return;
+    }
+    const parsedUser = JSON.parse(storedUser);
+    setUser(parsedUser);
+    fetchAllPosts(parsedUser._id);
+  }, [navigate]);
 
-  const fetchExplorePosts = async () => {
+  const fetchAllPosts = async (currentUserId) => {
     try {
       const response = await api.get('/api/posts/explore');
-      setPosts(response.data);
+      const postsWithLikeStatus = response.data.map(post => ({
+        ...post,
+        isLiked: post.likes.includes(currentUserId)
+      }));
+      setPosts(postsWithLikeStatus);
     } catch (error) {
-      console.error('Error fetching explore posts:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error fetching posts:', error.response?.data || error.message);
     }
   };
 
-  const handlePostClick = (postId) => {
-    navigate(`/post/${postId}`);
-  };
-
-  if (loading) {
-    return <div className="loading">Loading...</div>;
-  }
+  const isGuest = localStorage.getItem('guest') === 'true';
 
   return (
-    <div className="explore-container">
-      <div className="explore-header">
-        <h1>Global Video Feed</h1>
-      </div>
-      
-      <div className="explore-grid">
-        {posts.map(post => (
-          <div 
-            key={post._id} 
-            className="explore-item"
-            onClick={() => handlePostClick(post._id)}
-          >
-            <div className="grid-item-content">
+    <div className="posts-feed">
+      {posts.map(post => (
+        <div key={post._id} className="post">
+          <div className="post-header">
+            <div className="user-info" onClick={() => navigate(`/profile/${post.user?._id}`)}>
+              <div className="avatar">
+                {post.user?.profilePicture ? (
+                  <img src={post.user.profilePicture} alt="" />
+                ) : (
+                  <i className="fas fa-user"></i>
+                )}
+              </div>
+              <span className="username">{post.user?.username}</span>
+            </div>
+            <div className="post-header-right">
+              {new Date(post.createdAt).toLocaleDateString()}
+            </div>
+          </div>
+
+          {post.caption && <p className="caption">{post.caption}</p>}
+          
+          {post.media && (
+            <div className="media-container">
               {post.mediaType === 'video' ? (
-                <video
+                <video 
                   controls
                   playsInline
                   preload="metadata"
-                  style={{ width: '100%', maxWidth: '100%' }}
+                  poster={post.thumbnail || ''}
+                  className="video-player"
                 >
-                  <source src={post.media} type="video/mp4" />
+                  <source src={post.media} type={post.media.endsWith('.mp4') ? 'video/mp4' : 'video/webm'} />
                   Your browser does not support video playback.
                 </video>
               ) : (
-                <img src={post.media} alt={post.caption} style={{ width: '100%', maxWidth: '100%' }} />
+                <img 
+                  src={post.media} 
+                  alt={post.caption || ''} 
+                  loading="lazy" 
+                />
               )}
             </div>
-            <div className="post-overlay">
-              <div className="post-stats">
-                <span><i className="fas fa-heart"></i> {post.likes?.length || 0}</span>
-                <span><i className="fas fa-comment"></i> {post.comments?.length || 0}</span>
-              </div>
-            </div>
+          )}
+
+          <div className="post-actions">
+            <button 
+              className={`action-btn ${post.isLiked ? 'liked' : ''}`}
+              disabled={isGuest}
+              title={isGuest ? 'Login to like posts' : ''}
+            >
+              <i className="fas fa-heart"></i>
+              <span className="action-count">{post.likes?.length || 0}</span>
+            </button>
+            <button className="action-btn" disabled={isGuest} title={isGuest ? 'Login to comment' : ''}>
+              <i className="fas fa-comment"></i>
+              <span className="action-count">{post.comments?.length || 0}</span>
+            </button>
+            <button className="action-btn" disabled={isGuest} title={isGuest ? 'Login to share' : ''}>
+              <i className="fas fa-share"></i>
+            </button>
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
+
+      {posts.length === 0 && (
+        <div className="empty-feed">
+          <div className="empty-feed-icon">
+            <i className="fas fa-camera"></i>
+          </div>
+          <h2>No Posts Yet</h2>
+          <p>Start following users to see their posts!</p>
+        </div>
+      )}
     </div>
   );
 };
