@@ -405,36 +405,7 @@ router.get('/videos', auth, async (req, res) => {
     const currentUser = await User.findById(req.user._id);
     console.log('Current user following:', currentUser.following);
     
-    // Get posts from followed users and self
-    const posts = await Post.aggregate([
-      // Match posts from followed users and self
-      {
-        $match: {
-          user: { $in: [...currentUser.following, req.user._id] }
-        }
-      },
-      // Sort by creation date
-      { $sort: { createdAt: -1 } },
-      // Limit to 50 posts
-      { $limit: 50 },
-      // Group by post ID to ensure uniqueness
-      {
-        $group: {
-          _id: '$_id',
-          user: { $first: '$user' },
-          caption: { $first: '$caption' },
-          media: { $first: '$media' },
-          mediaType: { $first: '$mediaType' },
-          likes: { $first: '$likes' },
-          comments: { $first: '$comments' },
-          createdAt: { $first: '$createdAt' },
-          location: { $first: '$location' },
-          tags: { $first: '$tags' }
-        }
-      },
-      // Sort again after grouping
-      { $sort: { createdAt: -1 } }
-    ]);
+  
 
     // Populate user information
     await Post.populate(posts, {
