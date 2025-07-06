@@ -39,7 +39,7 @@ const Home = () => {
 
   const fetchGlobalVideos = async () => {
     try {
-      const response = await api.get('/api/posts/videos');
+      const response = await api.get('/api/posts/feed');
       const postsWithLikeStatus = response.data.map(post => ({
         ...post,
         isLiked: post.likes.includes(user?._id)
