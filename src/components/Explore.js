@@ -13,7 +13,7 @@ const Explore = () => {
 
   const fetchVideos = async () => {
     try {
-      const response = await api.get('/api/posts/videos');
+      const response = await api.get('/api/posts/feed');
       setPosts(response.data);
     } catch (error) {
       console.error('Error fetching videos:', error.response?.data || error.message);
