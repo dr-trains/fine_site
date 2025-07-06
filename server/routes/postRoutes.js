@@ -398,17 +398,60 @@ router.get('/:id/shares', auth, async (req, res) => {
   }
 });
 
-// Get all videos (global video feed)
-router.get('/videos', async (req, res) => {
+// Get feed posts (from followed users and self)
+router.get('/videos', auth, async (req, res) => {
   try {
-    const videos = await Post.find({ mediaType: 'video' })
-      .populate('user', 'username profilePicture')
-      .sort('-createdAt')
-      .limit(100); // Adjust limit as needed
-    res.json(videos);
+    console.log('Fetching feed for user:', req.user._id);
+    const currentUser = await User.findById(req.user._id);
+    console.log('Current user following:', currentUser.following);
+    
+    // Get posts from followed users and self
+    const posts = await Post.aggregate([
+      // Match posts from followed users and self
+      {
+        $match: {
+          user: { $in: [...currentUser.following, req.user._id] }
+        }
+      },
+      // Sort by creation date
+      { $sort: { createdAt: -1 } },
+      // Limit to 50 posts
+      { $limit: 50 },
+      // Group by post ID to ensure uniqueness
+      {
+        $group: {
+          _id: '$_id',
+          user: { $first: '$user' },
+          caption: { $first: '$caption' },
+          media: { $first: '$media' },
+          mediaType: { $first: '$mediaType' },
+          likes: { $first: '$likes' },
+          comments: { $first: '$comments' },
+          createdAt: { $first: '$createdAt' },
+          location: { $first: '$location' },
+          tags: { $first: '$tags' }
+        }
+      },
+      // Sort again after grouping
+      { $sort: { createdAt: -1 } }
+    ]);
+
+    // Populate user information
+    await Post.populate(posts, {
+      path: 'user',
+      select: 'username profilePicture'
+    });
+
+    // Populate comments user information
+    await Post.populate(posts, {
+      path: 'comments.user',
+      select: 'username profilePicture'
+    });
+    
+    console.log('Found unique posts:', posts.length);
+    res.json(posts);
   } catch (error) {
+    console.error('Error in feed:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
-
-module.exports = router;
