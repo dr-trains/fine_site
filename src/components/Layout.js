@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Layout.css';
+import BottomNav from './BottomNav';
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -77,6 +78,7 @@ const Layout = ({ children }) => {
       <main className="main-content">
         {children}
       </main>
+      <BottomNav />
     </div>
   );
 };
