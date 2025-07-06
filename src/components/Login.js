@@ -110,20 +110,19 @@ const Login = () => {
             type="button"
             className="guest-button"
             style={{ marginTop: '16px', width: '100%' }}
-            onClick={() => {
-              localStorage.setItem('guest', 'true');
-              localStorage.setItem('user', JSON.stringify({
-                _id: 'guest',
-                username: 'Guest',
-                name: 'Guest User',
-                email: '',
-                profilePicture: '',
-                bio: 'Browsing as guest',
-                followers: [],
-                following: [],
-                posts: []
-              }));
-              navigate('/');
+            onClick={async () => {
+              try {
+                const response = await api.post('/api/users/login', {
+                  email: 'guest@fineshytig.com',
+                  password: 'guestpassword'
+                });
+                localStorage.setItem('token', response.data.token);
+                localStorage.setItem('user', JSON.stringify(response.data.user));
+                localStorage.setItem('guest', 'true');
+                navigate('/');
+              } catch (err) {
+                alert('Guest login failed!');
+              }
             }}
           >
             Continue as Guest
