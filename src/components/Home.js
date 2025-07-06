@@ -6,6 +6,7 @@ import './Home.css';
 const Home = () => {
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [showVideoFeed, setShowVideoFeed] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,8 +17,12 @@ const Home = () => {
     }
     const parsedUser = JSON.parse(storedUser);
     setUser(parsedUser);
-    fetchPosts(parsedUser._id);
-  }, [navigate]);
+    if (showVideoFeed) {
+      fetchGlobalVideos();
+    } else {
+      fetchPosts(parsedUser._id);
+    }
+  }, [navigate, showVideoFeed]);
 
   const fetchPosts = async (currentUserId) => {
     try {
@@ -29,6 +34,19 @@ const Home = () => {
       setPosts(postsWithLikeStatus);
     } catch (error) {
       console.error('Error fetching posts:', error.response?.data || error.message);
+    }
+  };
+
+  const fetchGlobalVideos = async () => {
+    try {
+      const response = await api.get('/api/posts/videos');
+      const postsWithLikeStatus = response.data.map(post => ({
+        ...post,
+        isLiked: post.likes.includes(user?._id)
+      }));
+      setPosts(postsWithLikeStatus);
+    } catch (error) {
+      console.error('Error fetching videos:', error.response?.data || error.message);
     }
   };
 
@@ -47,10 +65,27 @@ const Home = () => {
     }
   };
 
+  const isGuest = localStorage.getItem('guest') === 'true';
+
   if (!user) return null;
 
   return (
     <div className="posts-feed">
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+        <button
+          className={showVideoFeed ? '' : 'active'}
+          onClick={() => setShowVideoFeed(false)}
+          style={{ marginRight: 8 }}
+        >
+          Following Feed
+        </button>
+        <button
+          className={showVideoFeed ? 'active' : ''}
+          onClick={() => setShowVideoFeed(true)}
+        >
+          Global Video Feed
+        </button>
+      </div>
       {posts.map(post => (
         <div key={post._id} className="post">
           <div className="post-header">
@@ -97,16 +132,18 @@ const Home = () => {
           <div className="post-actions">
             <button 
               className={`action-btn ${post.isLiked ? 'liked' : ''}`}
-              onClick={() => handleLike(post._id)}
+              onClick={() => !isGuest && handleLike(post._id)}
+              disabled={isGuest}
+              title={isGuest ? 'Login to like posts' : ''}
             >
               <i className="fas fa-heart"></i>
               <span className="action-count">{post.likes?.length || 0}</span>
             </button>
-            <button className="action-btn">
+            <button className="action-btn" disabled={isGuest} title={isGuest ? 'Login to comment' : ''}>
               <i className="fas fa-comment"></i>
               <span className="action-count">{post.comments?.length || 0}</span>
             </button>
-            <button className="action-btn">
+            <button className="action-btn" disabled={isGuest} title={isGuest ? 'Login to share' : ''}>
               <i className="fas fa-share"></i>
             </button>
           </div>

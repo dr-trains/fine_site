@@ -14,7 +14,8 @@ import Layout from './components/Layout';
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('token');
-  if (!token) {
+  const isGuest = localStorage.getItem('guest') === 'true';
+  if (!token && !isGuest) {
     return <Navigate to="/login" />;
   }
   return <Layout>{children}</Layout>;

@@ -106,6 +106,17 @@ const Login = () => {
           <p>
             Don't have an account? <Link to="/register">Sign up</Link>
           </p>
+          <button
+            type="button"
+            className="guest-button"
+            style={{ marginTop: '16px', width: '100%' }}
+            onClick={() => {
+              localStorage.setItem('guest', 'true');
+              navigate('/');
+            }}
+          >
+            Continue as Guest
+          </button>
         </div>
       </div>
     </div>

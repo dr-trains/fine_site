@@ -12,6 +12,8 @@ const Layout = ({ children }) => {
     navigate('/login');
   };
 
+  const isGuest = localStorage.getItem('guest') === 'true';
+
   return (
     <div className="app-container">
       <nav className="sidebar">
@@ -55,10 +57,20 @@ const Layout = ({ children }) => {
             <span>Profile</span>
           </Link>
 
-          <button onClick={handleLogout} className="nav-item logout-btn">
-            <i className="fas fa-sign-out-alt"></i>
-            <span>Logout</span>
-          </button>
+          {isGuest ? (
+            <button onClick={() => {
+              localStorage.removeItem('guest');
+              navigate('/login');
+            }} className="nav-item logout-btn">
+              <i className="fas fa-sign-out-alt"></i>
+              <span>Exit Guest</span>
+            </button>
+          ) : (
+            <button onClick={handleLogout} className="nav-item logout-btn">
+              <i className="fas fa-sign-out-alt"></i>
+              <span>Logout</span>
+            </button>
+          )}
         </div>
       </nav>
 

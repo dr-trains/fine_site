@@ -317,7 +317,7 @@ router.get('/trending/hashtags', auth, async (req, res) => {
 });
 
 // Get explore posts
-router.get('/explore', auth, async (req, res) => {
+router.get('/explore', async (req, res) => {
   try {
     console.log('--- EXPLORE: ROUTE HANDLER ENTERED ---');
     res.json({ message: 'Explore page is alive' });
@@ -391,6 +391,19 @@ router.get('/:id/shares', auth, async (req, res) => {
     .sort('-createdAt');
 
     res.json(shares);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get all videos (global video feed)
+router.get('/videos', async (req, res) => {
+  try {
+    const videos = await Post.find({ mediaType: 'video' })
+      .populate('user', 'username profilePicture')
+      .sort('-createdAt')
+      .limit(100); // Adjust limit as needed
+    res.json(videos);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
