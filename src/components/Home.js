@@ -6,7 +6,6 @@ import './Home.css';
 const Home = () => {
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
-  const [showVideoFeed, setShowVideoFeed] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,12 +16,8 @@ const Home = () => {
     }
     const parsedUser = JSON.parse(storedUser);
     setUser(parsedUser);
-    if (showVideoFeed) {
-      fetchGlobalVideos(parsedUser);
-    } else {
-      fetchPosts(parsedUser._id);
-    }
-  }, [navigate, showVideoFeed]);
+    fetchPosts(parsedUser._id);
+  }, [navigate]);
 
   const fetchPosts = async (currentUserId) => {
     try {
@@ -34,19 +29,6 @@ const Home = () => {
       setPosts(postsWithLikeStatus);
     } catch (error) {
       console.error('Error fetching posts:', error.response?.data || error.message);
-    }
-  };
-
-  const fetchGlobalVideos = async (currentUser) => {
-    try {
-      const response = await api.get('/api/posts/videos');
-      const postsWithLikeStatus = response.data.map(post => ({
-        ...post,
-        isLiked: currentUser && post.likes.includes(currentUser._id)
-      }));
-      setPosts(postsWithLikeStatus);
-    } catch (error) {
-      console.error('Error fetching videos:', error.response?.data || error.message);
     }
   };
 
@@ -69,21 +51,6 @@ const Home = () => {
 
   return (
     <div className="posts-feed">
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-        <button
-          className={showVideoFeed ? '' : 'active'}
-          onClick={() => setShowVideoFeed(false)}
-          style={{ marginRight: 8 }}
-        >
-          Following Feed
-        </button>
-        <button
-          className={showVideoFeed ? 'active' : ''}
-          onClick={() => setShowVideoFeed(true)}
-        >
-          Global Video Feed
-        </button>
-      </div>
       {posts.map(post => (
         <div key={post._id} className="post">
           <div className="post-header">

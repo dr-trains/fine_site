@@ -15,32 +15,26 @@ const Profile = () => {
   const getCurrentUser = useCallback(() => {
     try {
       const userData = localStorage.getItem('user');
-      const token = localStorage.getItem('token');
-      
-      console.log('Raw user data from localStorage:', userData);
-      console.log('Current token:', token ? 'exists' : 'missing');
-
-      if (!userData || !token) {
-        console.log('No user data or token found');
+      if (!userData) {
         return null;
       }
-
       const parsedUser = JSON.parse(userData);
-      console.log('Parsed user data:', parsedUser);
-
-      if (!parsedUser.id && !parsedUser._id) {
-        console.log('No user ID found in parsed data');
+      // Allow guest user
+      if (parsedUser._id === 'guest') {
+        return parsedUser;
+      }
+      const token = localStorage.getItem('token');
+      if (!token) {
         return null;
       }
-
-      // Ensure we have _id property
+      if (!parsedUser.id && !parsedUser._id) {
+        return null;
+      }
       if (!parsedUser._id) {
         parsedUser._id = parsedUser.id;
       }
-
       return parsedUser;
     } catch (error) {
-      console.error('Error getting current user:', error);
       return null;
     }
   }, []);
@@ -105,12 +99,9 @@ const Profile = () => {
   useEffect(() => {
     const currentUser = getCurrentUser();
     if (!currentUser) {
-      console.log('No user data found, redirecting to login');
       navigate('/login');
       return;
     }
-
-    console.log('Initializing profile with user:', currentUser);
     fetchProfile();
     fetchUserPosts();
   }, [fetchProfile, fetchUserPosts, getCurrentUser, navigate]);

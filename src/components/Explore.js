@@ -9,15 +9,15 @@ const Explore = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchExplorePosts();
+    fetchGlobalVideos();
   }, []);
 
-  const fetchExplorePosts = async () => {
+  const fetchGlobalVideos = async () => {
     try {
-      const response = await api.get('/api/posts/explore');
+      const response = await api.get('/api/posts/videos');
       setPosts(response.data);
     } catch (error) {
-      console.error('Error fetching explore posts:', error);
+      console.error('Error fetching global videos:', error);
     } finally {
       setLoading(false);
     }
@@ -34,29 +34,23 @@ const Explore = () => {
   return (
     <div className="explore-container">
       <div className="explore-header">
-        <h1>Explore</h1>
+        <h1>Global Video Feed</h1>
       </div>
       
       <div className="explore-grid">
-        {posts.map(post => (
+        {posts.filter(post => post.mediaType === 'video').map(post => (
           <div 
             key={post._id} 
             className="explore-item"
             onClick={() => handlePostClick(post._id)}
           >
             <div className="grid-item-content">
-              {post.mediaType === 'video' ? (
-                <>
-                  <video>
-                    <source src={post.media} type="video/mp4" />
-                  </video>
-                  <div className="video-icon">
-                    <i className="fas fa-play"></i>
-                  </div>
-                </>
-              ) : (
-                <img src={post.media} alt={post.caption} />
-              )}
+              <video>
+                <source src={post.media} type="video/mp4" />
+              </video>
+              <div className="video-icon">
+                <i className="fas fa-play"></i>
+              </div>
             </div>
             <div className="post-overlay">
               <div className="post-stats">
