@@ -4,50 +4,21 @@ import api from '../utils/axios';
 import './Home.css';
 
 const Explore = () => {
-  const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) {
-      navigate('/login');
-      return;
-    }
-    const parsedUser = JSON.parse(storedUser);
-    setUser(parsedUser);
-    fetchPosts(parsedUser._id);
-  }, [navigate]);
+    fetchVideos();
+  }, []);
 
-  const fetchPosts = async (currentUserId) => {
+  const fetchVideos = async () => {
     try {
-      const response = await api.get('/api/posts/global');
-      const postsWithLikeStatus = response.data.map(post => ({
-        ...post,
-        isLiked: post.likes.includes(currentUserId)
-      }));
-      setPosts(postsWithLikeStatus);
+      const response = await api.get('/api/posts/videos');
+      setPosts(response.data);
     } catch (error) {
-      console.error('Error fetching global posts:', error.response?.data || error.message);
+      console.error('Error fetching videos:', error.response?.data || error.message);
     }
   };
-
-  const handleLike = async (postId) => {
-    try {
-      await api.put(`/api/posts/${postId}/like`);
-      setPosts(posts.map(p => {
-        if (p._id === postId) {
-          return { ...p, isLiked: !p.isLiked };
-        }
-        return p;
-      }));
-    } catch (error) {
-      console.error('Error liking post:', error);
-      if (user) fetchPosts(user._id);
-    }
-  };
-
-  const isGuest = localStorage.getItem('guest') === 'true';
 
   return (
     <div className="posts-feed">
@@ -71,57 +42,30 @@ const Explore = () => {
 
           {post.caption && <p className="caption">{post.caption}</p>}
           
-          {post.media && (
+          {post.media && post.mediaType === 'video' && (
             <div className="media-container">
-              {post.mediaType === 'video' ? (
-                <video 
-                  controls
-                  playsInline
-                  preload="metadata"
-                  poster={post.thumbnail || ''}
-                  className="video-player"
-                >
-                  <source src={post.media} type={post.media.endsWith('.mp4') ? 'video/mp4' : 'video/webm'} />
-                  Your browser does not support video playback.
-                </video>
-              ) : (
-                <img 
-                  src={post.media} 
-                  alt={post.caption || ''} 
-                  loading="lazy" 
-                />
-              )}
+              <video 
+                controls
+                playsInline
+                preload="metadata"
+                poster={post.thumbnail || ''}
+                className="video-player"
+              >
+                <source src={post.media} type={post.media.endsWith('.mp4') ? 'video/mp4' : 'video/webm'} />
+                Your browser does not support video playback.
+              </video>
             </div>
           )}
-
-          <div className="post-actions">
-            <button 
-              className={`action-btn ${post.isLiked ? 'liked' : ''}`}
-              onClick={() => !isGuest && handleLike(post._id)}
-              disabled={isGuest}
-              title={isGuest ? 'Login to like posts' : ''}
-            >
-              <i className="fas fa-heart"></i>
-              <span className="action-count">{post.likes?.length || 0}</span>
-            </button>
-            <button className="action-btn" disabled={isGuest} title={isGuest ? 'Login to comment' : ''}>
-              <i className="fas fa-comment"></i>
-              <span className="action-count">{post.comments?.length || 0}</span>
-            </button>
-            <button className="action-btn" disabled={isGuest} title={isGuest ? 'Login to share' : ''}>
-              <i className="fas fa-share"></i>
-            </button>
-          </div>
         </div>
       ))}
 
       {posts.length === 0 && (
         <div className="empty-feed">
           <div className="empty-feed-icon">
-            <i className="fas fa-globe"></i>
+            <i className="fas fa-camera"></i>
           </div>
-          <h2>No Posts Yet</h2>
-          <p>There are no posts in the global feed yet!</p>
+          <h2>No Videos Yet</h2>
+          <p>Be the first to post a video!</p>
         </div>
       )}
     </div>
