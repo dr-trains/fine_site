@@ -398,26 +398,43 @@ router.get('/:id/shares', auth, async (req, res) => {
   }
 });
 
-// Get all videos (global video feed)
-router.get('/videos', async (req, res) => {
-  try {
-    const videos = await Post.find({ mediaType: 'video' })
-      .populate('user', 'username profilePicture')
-      .sort('-createdAt')
-      .limit(100); // Adjust limit as needed
-    res.json(videos);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
 
-// Global feed: all posts from all users
-router.get('/global', async (req, res) => {
+
+// Get global feed posts (all users, no following filter)
+router.get('/global-feed', async (req, res) => {
   try {
-    const posts = await Post.find({})
-      .populate('user', 'username profilePicture')
-      .sort('-createdAt')
-      .limit(100); // Adjust as needed
+    const posts = await Post.aggregate([
+      // No $match filter: get all posts
+      { $sort: { createdAt: -1 } },
+      { $limit: 50 },
+      {
+        $group: {
+          _id: '$_id',
+          user: { $first: '$user' },
+          caption: { $first: '$caption' },
+          media: { $first: '$media' },
+          mediaType: { $first: '$mediaType' },
+          likes: { $first: '$likes' },
+          comments: { $first: '$comments' },
+          createdAt: { $first: '$createdAt' },
+          location: { $first: '$location' },
+          tags: { $first: '$tags' }
+        }
+      },
+      { $sort: { createdAt: -1 } }
+    ]);
+
+    // Populate user information
+    await Post.populate(posts, {
+      path: 'user',
+      select: 'username profilePicture'
+    });
+    // Populate comments user information
+    await Post.populate(posts, {
+      path: 'comments.user',
+      select: 'username profilePicture'
+    });
+
     res.json(posts);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
