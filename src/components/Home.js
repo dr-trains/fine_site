@@ -65,6 +65,8 @@ const Home = () => {
     }
   };
 
+  const isGuest = localStorage.getItem('guest') === 'true';
+
   if (!user) return null;
 
   return (
@@ -130,16 +132,18 @@ const Home = () => {
           <div className="post-actions">
             <button 
               className={`action-btn ${post.isLiked ? 'liked' : ''}`}
-              onClick={() => handleLike(post._id)}
+              onClick={() => !isGuest && handleLike(post._id)}
+              disabled={isGuest}
+              title={isGuest ? 'Login to like posts' : ''}
             >
               <i className="fas fa-heart"></i>
               <span className="action-count">{post.likes?.length || 0}</span>
             </button>
-            <button className="action-btn">
+            <button className="action-btn" disabled={isGuest} title={isGuest ? 'Login to comment' : ''}>
               <i className="fas fa-comment"></i>
               <span className="action-count">{post.comments?.length || 0}</span>
             </button>
-            <button className="action-btn">
+            <button className="action-btn" disabled={isGuest} title={isGuest ? 'Login to share' : ''}>
               <i className="fas fa-share"></i>
             </button>
           </div>
