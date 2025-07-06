@@ -68,6 +68,45 @@ const Login = () => {
     }
   };
 
+  const handleGuestLogin = async () => {
+    try {
+      // Try to log in as guest
+      const response = await api.post('/api/users/login', {
+        email: 'guest@fineshytig.com',
+        password: 'guestpassword'
+      });
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      localStorage.setItem('guest', 'true');
+      navigate('/');
+    } catch (err) {
+      // If login fails with 400, try to register the guest user, then login again
+      if (err.response && err.response.status === 400) {
+        try {
+          await api.post('/api/users/register', {
+            username: 'guest',
+            email: 'guest@fineshytig.com',
+            password: 'guestpassword',
+            name: 'Guest User'
+          });
+          // Try login again
+          const response = await api.post('/api/users/login', {
+            email: 'guest@fineshytig.com',
+            password: 'guestpassword'
+          });
+          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+          localStorage.setItem('guest', 'true');
+          navigate('/');
+        } catch (registerErr) {
+          alert('Guest login failed!');
+        }
+      } else {
+        alert('Guest login failed!');
+      }
+    }
+  };
+
   return (
     <div className="auth-container">
       <div className="auth-box">
@@ -110,20 +149,7 @@ const Login = () => {
             type="button"
             className="guest-button"
             style={{ marginTop: '16px', width: '100%' }}
-            onClick={async () => {
-              try {
-                const response = await api.post('/api/users/login', {
-                  email: 'guest@fineshytig.com',
-                  password: 'guestpassword'
-                });
-                localStorage.setItem('token', response.data.token);
-                localStorage.setItem('user', JSON.stringify(response.data.user));
-                localStorage.setItem('guest', 'true');
-                navigate('/');
-              } catch (err) {
-                alert('Guest login failed!');
-              }
-            }}
+            onClick={handleGuestLogin}
           >
             Continue as Guest
           </button>
