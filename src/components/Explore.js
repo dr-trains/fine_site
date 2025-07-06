@@ -9,15 +9,15 @@ const Explore = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchGlobalVideos();
+    fetchExplorePosts();
   }, []);
 
-  const fetchGlobalVideos = async () => {
+  const fetchExplorePosts = async () => {
     try {
-      const response = await api.get('/api/posts/videos');
+      const response = await api.get('/api/posts/explore');
       setPosts(response.data);
     } catch (error) {
-      console.error('Error fetching global videos:', error);
+      console.error('Error fetching explore posts:', error);
     } finally {
       setLoading(false);
     }
@@ -38,19 +38,26 @@ const Explore = () => {
       </div>
       
       <div className="explore-grid">
-        {posts.filter(post => post.mediaType === 'video').map(post => (
+        {posts.map(post => (
           <div 
             key={post._id} 
             className="explore-item"
             onClick={() => handlePostClick(post._id)}
           >
             <div className="grid-item-content">
-              <video>
-                <source src={post.media} type="video/mp4" />
-              </video>
-              <div className="video-icon">
-                <i className="fas fa-play"></i>
-              </div>
+              {post.mediaType === 'video' ? (
+                <video
+                  controls
+                  playsInline
+                  preload="metadata"
+                  style={{ width: '100%', maxWidth: '100%' }}
+                >
+                  <source src={post.media} type="video/mp4" />
+                  Your browser does not support video playback.
+                </video>
+              ) : (
+                <img src={post.media} alt={post.caption} style={{ width: '100%', maxWidth: '100%' }} />
+              )}
             </div>
             <div className="post-overlay">
               <div className="post-stats">

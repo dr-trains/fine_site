@@ -316,13 +316,15 @@ router.get('/trending/hashtags', auth, async (req, res) => {
   }
 });
 
-// Get explore posts
+// Get explore posts (all posts from all users)
 router.get('/explore', async (req, res) => {
   try {
-    console.log('--- EXPLORE: ROUTE HANDLER ENTERED ---');
-    res.json({ message: 'Explore page is alive' });
+    const posts = await Post.find({})
+      .populate('user', 'username profilePicture')
+      .sort('-createdAt')
+      .limit(100); // Adjust as needed
+    res.json(posts);
   } catch (error) {
-    console.error('--- EXPLORE: THIS SHOULD NOT BE REACHED ---', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
