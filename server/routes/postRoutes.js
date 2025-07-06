@@ -399,7 +399,7 @@ router.get('/:id/shares', auth, async (req, res) => {
 });
 
 // Get global feed posts (all users, no following filter)
-router.get('/global-feed', async (req, res) => {
+router.get('/global', async (req, res) => {
   try {
     const posts = await Post.aggregate([
       { $sort: { createdAt: -1 } },
