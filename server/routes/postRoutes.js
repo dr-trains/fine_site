@@ -60,7 +60,14 @@ router.get('/feed', auth, async (req, res) => {
     const currentUser = await User.findById(req.user._id);
     console.log('Current user following:', currentUser.following);
     
-    
+    // Get posts from followed users and self
+    const posts = await Post.aggregate([
+      // Match posts from followed users and self
+      {
+        $match: {
+          user: { $in: [...currentUser.following, req.user._id] }
+        }
+      },
       // Sort by creation date
       { $sort: { createdAt: -1 } },
       // Limit to 50 posts
