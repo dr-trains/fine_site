@@ -398,21 +398,9 @@ router.get('/:id/shares', auth, async (req, res) => {
   }
 });
 
-// Get all videos (global video feed)
-router.get('/videos', async (req, res) => {
-  try {
-    const videos = await Post.find({ mediaType: 'video' })
-      .populate('user', 'username profilePicture')
-      .sort('-createdAt')
-      .limit(100); // Adjust limit as needed
-    res.json(videos);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
 
 // Get global feed posts (all users, no following filter)
-router.get('/global-feed', async (req, res) => {
+router.get('/global-feed', auth, async (req, res) => {
   try {
     const posts = await Post.find({})
       .sort({ createdAt: -1 })
