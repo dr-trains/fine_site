@@ -398,3 +398,44 @@ router.get('/:id/shares', auth, async (req, res) => {
   }
 });
 
+// Get global feed posts (all users, no following filter)
+router.get('/global-feed', async (req, res) => {
+  try {
+    const posts = await Post.aggregate([
+      { $sort: { createdAt: -1 } },
+      { $limit: 50 },
+      {
+        $group: {
+          _id: '$_id',
+          user: { $first: '$user' },
+          caption: { $first: '$caption' },
+          media: { $first: '$media' },
+          mediaType: { $first: '$mediaType' },
+          likes: { $first: '$likes' },
+          comments: { $first: '$comments' },
+          createdAt: { $first: '$createdAt' },
+          location: { $first: '$location' },
+          tags: { $first: '$tags' }
+        }
+      },
+      { $sort: { createdAt: -1 } }
+    ]);
+
+    // Populate user information
+    await Post.populate(posts, {
+      path: 'user',
+      select: 'username profilePicture'
+    });
+    // Populate comments user information
+    await Post.populate(posts, {
+      path: 'comments.user',
+      select: 'username profilePicture'
+    });
+
+    res.json(posts);
+  } catch (error) {
+    console.error('Error in global feed:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+

@@ -8,15 +8,19 @@ const Explore = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchVideos();
+    fetchPosts();
   }, []);
 
-  const fetchVideos = async () => {
+  const fetchPosts = async (currentUserId) => {
     try {
-      const response = await api.get('/api/posts/videos');
-      setPosts(response.data);
+      const response = await api.get('/api/posts/global-feed');
+      const postsWithLikeStatus = response.data.map(post => ({
+        ...post,
+        isLiked: post.likes.includes(currentUserId)
+      }));
+      setPosts(postsWithLikeStatus);
     } catch (error) {
-      console.error('Error fetching videos:', error.response?.data || error.message);
+      console.error('Error fetching global posts:', error.response?.data || error.message);
     }
   };
 
