@@ -411,4 +411,17 @@ router.get('/videos', async (req, res) => {
   }
 });
 
+// Global feed: all posts from all users
+router.get('/global', async (req, res) => {
+  try {
+    const posts = await Post.find({})
+      .populate('user', 'username profilePicture')
+      .sort('-createdAt')
+      .limit(100); // Adjust as needed
+    res.json(posts);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
