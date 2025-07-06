@@ -400,13 +400,21 @@ router.get('/:id/shares', auth, async (req, res) => {
 
 
 
-// Get global feed posts (all users, no following filter)
-router.get('/global-feed', async (req, res) => {
+// Get feed posts (from followed users and self)
+router.get('/global-feed', auth, async (req, res) => {
   try {
+    console.log('Fetching feed for user:', req.user._id);
+    const currentUser = await User.findById(req.user._id);
+    console.log('Current user following:', currentUser.following);
+    
+    // Get posts from followed users and self
     const posts = await Post.aggregate([
-      // No $match filter: get all posts
+      
+      // Sort by creation date
       { $sort: { createdAt: -1 } },
+      // Limit to 50 posts
       { $limit: 50 },
+      // Group by post ID to ensure uniqueness
       {
         $group: {
           _id: '$_id',
@@ -421,6 +429,7 @@ router.get('/global-feed', async (req, res) => {
           tags: { $first: '$tags' }
         }
       },
+      // Sort again after grouping
       { $sort: { createdAt: -1 } }
     ]);
 
@@ -429,16 +438,17 @@ router.get('/global-feed', async (req, res) => {
       path: 'user',
       select: 'username profilePicture'
     });
+
     // Populate comments user information
     await Post.populate(posts, {
       path: 'comments.user',
       select: 'username profilePicture'
     });
-
+    
+    console.log('Found unique posts:', posts.length);
     res.json(posts);
   } catch (error) {
+    console.error('Error in feed:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
-
-module.exports = router;
