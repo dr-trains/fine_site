@@ -72,19 +72,7 @@ const Home = () => {
   return (
     <div className="posts-feed">
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-        <button
-          className={showVideoFeed ? '' : 'active'}
-          onClick={() => setShowVideoFeed(false)}
-          style={{ marginRight: 8 }}
-        >
-          Following Feed
-        </button>
-        <button
-          className={showVideoFeed ? 'active' : ''}
-          onClick={() => setShowVideoFeed(true)}
-        >
-          Global Video Feed
-        </button>
+        
       </div>
       {posts.map(post => (
         <div key={post._id} className="post">
